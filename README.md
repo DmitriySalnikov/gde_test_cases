@@ -39,3 +39,27 @@ GDExtension template that automatically builds into a self-contained addon for t
 3. Create a new release on GitHub, uploading the artifact as an asset.
 4. On the asset, Right Click→Copy Link to get a direct file URL. Don't use the artifacts directly from GitHub Actions, as they expire.
 5. When submitting/updating on the Godot Asset Library, Change "Repository host" to `Custom` and "Download URL" to the one you copied.
+
+## Build
+
+As well as for the engine itself, you will need to configure the [environment](https://docs.godotengine.org/en/4.1/contributing/development/compiling/index.html).
+And also you need to apply several patches:
+
+```bash
+cd godot-cpp
+# Optional
+## Build only the necessary classes
+git apply --ignore-space-change --ignore-whitespace ../patches/godot_cpp_exclude_unused_classes.patch
+## Faster build
+git apply --ignore-space-change --ignore-whitespace ../patches/unity_build.patch
+```
+
+Then you can just run scons as usual:
+
+```bash
+# build for the current system.
+# target=editor is used for both the editor and the debug template.
+scons target=editor dev_build=yes debug_symbols=yes
+# build for the android. ANDROID_NDK_ROOT is required in your environment variables.
+scons platform=android target=template_release arch=arm64v8
+```

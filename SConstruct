@@ -12,23 +12,24 @@ sources = Glob("src/*.cpp")
 # Find gdextension path even if the directory or extension is renamed (e.g. project/addons/example/example.gdextension).
 (extension_path,) = glob("project/addons/*/*.gdextension")
 
+opts = Variables([], ARGUMENTS)
+
 # Find the addon path (e.g. project/addons/example).
-addon_path = Path(extension_path).parent
+opts.Add(PathVariable("addon_output_dir", "Path to the output directory", Path(extension_path).parent / "bin", PathVariable.PathIsDirCreate))
+opts.Update(env)
+
+opts.GenerateHelpText(env)
+
+addon_path = env["addon_output_dir"]
 
 # Find the project name from the gdextension file (e.g. example).
 project_name = Path(extension_path).stem
-
-# TODO: Cache is disabled currently.
-# scons_cache_path = os.environ.get("SCONS_CACHE")
-# if scons_cache_path != None:
-#     CacheDir(scons_cache_path)
-#     print("Scons cache enabled... (path: '" + scons_cache_path + "')")
 
 # Create the library target (e.g. libexample.linux.debug.x86_64.so).
 debug_or_release = "release" if env["target"] == "template_release" else "debug"
 if env["platform"] == "macos":
     library = env.SharedLibrary(
-        "{0}/bin/lib{1}.{2}.{3}.framework/{1}.{2}.{3}".format(
+        "{0}/lib{1}.{2}.{3}.framework/{1}.{2}.{3}".format(
             addon_path,
             project_name,
             env["platform"],
@@ -38,7 +39,7 @@ if env["platform"] == "macos":
     )
 else:
     library = env.SharedLibrary(
-        "{}/bin/lib{}.{}.{}.{}{}".format(
+        "{}/lib{}.{}.{}.{}{}".format(
             addon_path,
             project_name,
             env["platform"],
